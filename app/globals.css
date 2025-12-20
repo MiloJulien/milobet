@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  --foreground: #ffffff;
+  --background: #171717;
+}
+
+html{
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+  font-size: 1.5em;
+}
+h2 {
+  font-size: 2em;
+}
+h3 {
+  font-size: 1.3em;
+}
+
+.tab-content {
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
+}

@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model bet {
+  id         Int     @id @default(autoincrement())
+  user_id    Int
+  match_id   Int
+  prediction String  @db.VarChar(50)
+  matches    matches @relation(fields: [match_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_bet_match")
+  users      users   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_bet_user")
+
+  @@unique([user_id, match_id], map: "unique_user_match")
+}
+
+model matches {
+  id              Int      @id
+  utc_date        DateTime @db.Timestamp(6)
+  status          String?  @db.VarChar(50)
+  group_name      String?  @db.VarChar(50)
+  home_team_name  String?  @db.VarChar(255)
+  home_team_crest String?  @db.VarChar(255)
+  away_team_name  String?  @db.VarChar(255)
+  away_team_crest String?  @db.VarChar(255)
+  score_winner    String?  @db.VarChar(50)
+  home_score      Int?
+  away_score      Int?
+  stage           String?  @db.VarChar(50)
+  bet             bet[]
+}
+
+model users {
+  id       Int    @id @default(autoincrement())
+  username String @unique @db.VarChar(50)
+  email    String @unique @db.VarChar(100)
+  password String
+  has_bet  Int    @default(0)
+  points   Int    @default(0)
+  bet      bet[]
+}
