@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 const MatchList = () => {
   const { data: session } = useSession();
@@ -49,10 +50,12 @@ const MatchList = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900">
       {/* Logo */}
-      <img
+      <Image
         src="/images/logos/logo-white.png" // Remplacez par le chemin de votre logo
         alt="Logo"
         className="w-32 h-32 mb-4"
+        width={12}
+        height={12}
       />
       {/* Barre de chargement */}
       <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -169,10 +172,12 @@ const MatchList = () => {
                       htmlFor={`home-${match.id}`}
                       className="border-3 rounded-xl px-3 py-2 flex flex-col items-center gap-2 peer-checked:border-emerald-500 peer-checked:bg-emerald-950"
                     >
-                      <img
+                      <Image
                         src={match.home_team_crest}
                         alt={`${match.home_team_name} crest`}
                         className="w-12 h-12 object-cover rounded-full"
+                        width={12}
+                        height={12}
                       />
                       <span className="text-sm">{match.home_team_name}</span>
                     </label>
@@ -191,10 +196,12 @@ const MatchList = () => {
                       htmlFor={`draw-${match.id}`}
                       className="border-3 rounded-xl px-3 py-2 flex flex-col items-center gap-2 peer-checked:border-emerald-500 peer-checked:bg-emerald-950"
                     >
-                      <img
-                        src="images/logos/logo.png"
+                      <Image
+                        src="/images/logos/logo.png"
                         alt="Draw"
                         className="w-12 h-12 object-cover rounded-full"
+                        width={12}
+                        height={12}
                       />
                       <span className="text-sm">Nul</span>
                     </label>
@@ -213,10 +220,12 @@ const MatchList = () => {
                       htmlFor={`away-${match.id}`}
                       className="border-3 rounded-xl px-3 py-2 flex flex-col items-center gap-2 peer-checked:border-emerald-500 peer-checked:bg-emerald-950"
                     >
-                      <img
+                      <Image
                         src={match.away_team_crest}
                         alt={`${match.away_team_name} crest`}
                         className="w-12 h-12 object-cover rounded-full"
+                        width={12}
+                        height={12}
                       />
                       <span className="text-sm">{match.away_team_name}</span>
                     </label>

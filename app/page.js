@@ -10,15 +10,16 @@ import Testtaaab from '@/components/Testtaaab';
 import Footer from '@/components/Footer';
 import { useEffect } from "react";
 import { useTabs } from "@/app/TabContext";
+import Image from "next/image";
 
 export default function Home() {
   const { data: session, status } = useSession();
   const { scrollRef, handleScroll } = useTabs();
 
   const tabComponents = [
-    <Leaderboard />,
-    <MatchList />,
-    <Testtaaab />
+    Leaderboard,
+    MatchList,
+    Testtaaab
   ];
 
   const deadline = new Date("2026-06-11");
@@ -35,23 +36,25 @@ export default function Home() {
   }, [scrollRef, handleScroll]);
 
   if (status === 'loading') {
-  return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-900">
-      {/* Logo */}
-      <img
-        src="/images/logos/logo-white.png" // Remplacez par le chemin de votre logo
-        alt="Logo"
-        className="w-32 h-32 mb-4"
-      />
-      {/* Barre de chargement */}
-      <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
-        <div className="h-full bg-emerald-500 animate-loading-bar"></div>
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900">
+        {/* Logo */}
+        <Image
+          src="/images/logos/logo-white.png"
+          alt="Logo"
+          className="w-32 h-32 mb-4"
+          width={12}
+          height={12}
+        />
+        {/* Barre de chargement */}
+        <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-full bg-emerald-500 animate-loading-bar"></div>
+        </div>
+        {/* Texte de chargement */}
+        <p className="text-white mt-4">Chargement de la page...</p>
       </div>
-      {/* Texte de chargement */}
-      <p className="text-white mt-4">Chargement de la page...</p>
-    </div>
-  );
-}
+    );
+  }
 
   if (!session) {
     return (
@@ -68,7 +71,7 @@ export default function Home() {
   }
 
   if (session.user.has_bet === 0) {
-  return (
+    return (
       <MatchList />
     );
   }
@@ -86,7 +89,7 @@ export default function Home() {
             className="snap-center w-full flex-shrink-0 tab-content"
             style={{ scrollSnapAlign: "center" }}
           >
-            {Component}
+            <Component/>
           </div>
         ))}
       </main>

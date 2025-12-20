@@ -2,6 +2,7 @@
 
 import { signIn } from 'next-auth/react'
 import { useState } from 'react'
+import Link from "next/link";
 
 export default function Connexion() {
     const [error, setError] = useState(null)
@@ -45,9 +46,9 @@ export default function Connexion() {
                 </form>
                 {error && <p className="text-red-500 mt-4">{error}</p>}
                 <p className="flex justify-end mt-6 text-sm">
-                    <a href="/reset-password" className="ml-1 text-sm font-semibold underline">
+                    <Link href="/reset-password" className="ml-1 text-sm font-semibold underline">
                         Mot de passe oublié ?
-                    </a>
+                    </Link>
                 </p>
             </div>
        
