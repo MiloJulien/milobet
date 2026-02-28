@@ -9,7 +9,17 @@ const nextConfig = {
     config.resolve.alias['@'] = path.resolve(__dirname, 'src')
     return config
   },
+
   reactStrictMode: true,
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "crests.football-data.org",
+      },
+    ],
+  },
 }
 
 export default nextConfig

@@ -4,7 +4,7 @@ import { saveMatches } from '@/lib/dbService'
 export async function GET(req) {
     try {
         // Appelle l'API pour récupérer les matchs
-        const data = await fetchFootballData('/competitions/EC/matches');
+        const data = await fetchFootballData('/competitions/WC/matches');
         const matches = data.matches;
 
         // Sauvegarde les matchs dans la base de données

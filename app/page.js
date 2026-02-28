@@ -4,9 +4,7 @@ import Connexion from '../components/Connexion';
 import Inscription from '../components/Inscription';
 import { useSession } from 'next-auth/react';
 import MatchList from '@/components/MatchList';
-import Leaderboard from '@/components/Leaderboard';
-import Testtab from '@/components/Testtab';
-import Testtaaab from '@/components/Testtaaab';
+import Dashboard from '@/components/Dashboard';
 import Footer from '@/components/Footer';
 import { useEffect } from "react";
 import { useTabs } from "@/app/TabContext";
@@ -17,9 +15,8 @@ export default function Home() {
   const { scrollRef, handleScroll } = useTabs();
 
   const tabComponents = [
-    Leaderboard,
+    Dashboard,
     MatchList,
-    Testtaaab
   ];
 
   const deadline = new Date("2026-06-11");
@@ -38,22 +35,20 @@ export default function Home() {
   if (status === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-900">
-        {/* Logo */}
         <Image
           src="/images/logos/logo-white.png"
           alt="Logo"
           className="w-32 h-32 mb-4"
-          width={12}
-          height={12}
+          width={256}
+          height={256}
+          unoptimized
+          priority
         />
-        {/* Barre de chargement */}
-        <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
-          <div className="h-full bg-emerald-500 animate-loading-bar"></div>
-        </div>
-        {/* Texte de chargement */}
+        <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
         <p className="text-white mt-4">Chargement de la page...</p>
       </div>
     );
+
   }
 
   if (!session) {
@@ -89,7 +84,7 @@ export default function Home() {
             className="snap-center w-full flex-shrink-0 tab-content"
             style={{ scrollSnapAlign: "center" }}
           >
-            <Component/>
+            <Component />
           </div>
         ))}
       </main>
