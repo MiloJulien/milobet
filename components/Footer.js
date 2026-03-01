@@ -2,10 +2,26 @@
 
 import { signOut, useSession } from "next-auth/react";
 import { useTabs } from "@/app/TabContext";
+import { useEffect } from "react";
 
 export default function Footer() {
   const { data: session } = useSession();
-  const { activeTab, goToTab } = useTabs();
+  const { activeTab, goToTab, scrollRef } = useTabs();
+
+  // Si le scroll est resté sur MatchList après reload → forcer activeTab = 1
+  useEffect(() => {
+    if (!scrollRef?.current) return;
+
+    const clientWidth = scrollRef.current.clientWidth;
+    const scrollLeft = scrollRef.current.scrollLeft;
+
+    const index = Math.round(scrollLeft / clientWidth);
+
+    if (index !== activeTab) {
+      goToTab(index);
+    }
+  }, [scrollRef]);
+
 
   const tabs = [
     {

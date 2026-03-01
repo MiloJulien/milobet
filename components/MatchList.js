@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { useTabs } from "@/app/TabContext";
 
 const MatchList = () => {
   const { data: session } = useSession();
@@ -10,6 +11,12 @@ const MatchList = () => {
   const [predictions, setPredictions] = useState({}); // Stocke les prédictions pour chaque match
   const [errors, setErrors] = useState({}); // Stocke les erreurs pour chaque match
   const firstErrorRef = useRef(null); // Référence pour le premier champ avec une erreur
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalState, setModalState] = useState("loading");
+  const [modalMessage, setModalMessage] = useState("");
+  const { setActiveTab } = useTabs();
+
 
   useEffect(() => {
     const fetchMatchesAndBets = async () => {
@@ -135,12 +142,10 @@ const MatchList = () => {
     }));
   };
 
-  // Envoie les prédictions à l'API
   const handleSubmit = async () => {
     const newErrors = {};
     let firstErrorFound = false;
 
-    // Vérifie que toutes les prédictions sont remplies
     matches.forEach((match) => {
       if (!predictions[match.id]) {
         newErrors[match.id] = "Veuillez faire une prédiction pour ce match.";
@@ -154,30 +159,44 @@ const MatchList = () => {
     setErrors(newErrors);
 
     if (firstErrorFound) {
-      // Déplace le focus sur le premier champ avec une erreur
       firstErrorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
+    // ⬅️ Dès le clic
+    setShowModal(true);
+    setModalState("loading");
+    setModalMessage("Envoi des prédictions...");
+
     try {
       const response = await fetch("/api/bets", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ predictions }),
       });
 
       if (response.ok) {
-        alert("Prédictions enregistrées avec succès !");
-        window.location.reload(); // Recharge la page après succès
+        // Succès → afficher succès
+        setModalState("success");
+        setModalMessage("Prédictions enregistrées avec succès !");
+
+        // Puis passer automatiquement en mode redirection
+        setTimeout(() => {
+          setModalState("redirect");
+          setModalMessage("Redirection...");
+        }, 1200);
+        window.location.reload();
+
       } else {
-        alert("Erreur lors de l'enregistrement des prédictions.");
+        setModalState("error");
+        setModalMessage("Erreur lors de l'enregistrement des prédictions.");
       }
     } catch (error) {
-      console.error("Erreur lors de l'envoi des prédictions :", error);
+      setModalState("error");
+      setModalMessage("Une erreur est survenue.");
     }
   };
+
 
   return (
     <section>
@@ -310,6 +329,34 @@ const MatchList = () => {
           {session.user.has_bet === 0 ? "Envoyer mes prédictions" : "Mettre à jour mes prédictions"}
         </button>
       </div>
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 text-center w-80">
+
+            {/* Message */}
+            <p className="text-emerald-500 text-lg mb-4">{modalMessage}</p>
+
+            {/* Spinner pendant le chargement */}
+            {(modalState === "loading" || modalState === "success" || modalState === "redirect") && (
+              <div className="flex justify-center">
+                <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+
+            {/* Bouton si erreur */}
+            {modalState === "error" && (
+              <button
+                onClick={() => setShowModal(false)}
+                className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+              >
+                Fermer
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+
     </section>
   );
 };
