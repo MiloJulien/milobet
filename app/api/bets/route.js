@@ -64,9 +64,9 @@ export async function POST(req) {
       data: { has_bet: 1 },
     });
 
-    return NextResponse.json({ message: 'Prédictions enregistrées avec succès.' }, { status: 200 });
+    return NextResponse.json({ message: 'Pronostics enregistrés avec succès.' }, { status: 200 });
   } catch (error) {
-    console.error("Erreur lors de l'enregistrement des prédictions :", error);
-    return NextResponse.json({ message: "Erreur lors de l'enregistrement des prédictions." }, { status: 500 });
+    console.error("Erreur lors de l'enregistrement des pronostics :", error);
+    return NextResponse.json({ message: "Erreur lors de l'enregistrement des pronostics." }, { status: 500 });
   }
 }

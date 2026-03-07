@@ -5,6 +5,7 @@ import Inscription from '../components/Inscription';
 import { useSession } from 'next-auth/react';
 import MatchList from '@/components/MatchList';
 import Dashboard from '@/components/Dashboard';
+import Leaderboard from '@/components/Leaderboard';
 import Footer from '@/components/Footer';
 import { useEffect } from "react";
 import { useTabs } from "@/app/TabContext";
@@ -15,8 +16,9 @@ export default function Home() {
   const { scrollRef, handleScroll } = useTabs();
 
   const tabComponents = [
+    Leaderboard,
     Dashboard,
-    MatchList,
+    MatchList
   ];
 
   const deadline = new Date("2026-06-11");

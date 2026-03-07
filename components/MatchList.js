@@ -8,7 +8,7 @@ const MatchList = () => {
   const [matches, setMatches] = useState([]);
   const [bets, setBets] = useState([]); // Stocke les paris existants
   const [loading, setLoading] = useState(true);
-  const [predictions, setPredictions] = useState({}); // Stocke les prédictions pour chaque match
+  const [predictions, setPredictions] = useState({}); // Stocke les pronostics pour chaque match
   const [errors, setErrors] = useState({}); // Stocke les erreurs pour chaque match
   const firstErrorRef = useRef(null); // Référence pour le premier champ avec une erreur
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,10 +35,10 @@ const MatchList = () => {
           // Associer les paris existants aux matchs
           if (Array.isArray(dataBets)) {
             const betsMap = dataBets.reduce((acc, bet) => {
-              acc[bet.match_id] = bet.prediction; // Associe chaque match à sa prédiction
+              acc[bet.match_id] = bet.prediction; // Associe chaque match à son pronostic
               return acc;
             }, {});
-            setPredictions(betsMap); // Initialise les prédictions avec les paris existants
+            setPredictions(betsMap); // Initialise les pronostics avec les paris existants
           } else {
             console.error("Les données des paris ne sont pas un tableau :", dataBets);
           }
@@ -130,7 +130,7 @@ const MatchList = () => {
     return src;
   };
 
-  // Met à jour la prédiction pour un match spécifique
+  // Met à jour le pronostic pour un match spécifique
   const handlePredictionChange = (matchId, prediction) => {
     setPredictions((prev) => ({
       ...prev,
@@ -138,7 +138,7 @@ const MatchList = () => {
     }));
     setErrors((prev) => ({
       ...prev,
-      [matchId]: false, // Supprime l'erreur si une prédiction est faite
+      [matchId]: false, // Supprime l'erreur si un pronostic est fait
     }));
   };
 
@@ -148,7 +148,7 @@ const MatchList = () => {
 
     matches.forEach((match) => {
       if (!predictions[match.id]) {
-        newErrors[match.id] = "Veuillez faire une prédiction pour ce match.";
+        newErrors[match.id] = "Veuillez faire un pronostic pour ce match.";
         if (!firstErrorFound) {
           firstErrorRef.current = document.getElementById(`match-${match.id}`);
           firstErrorFound = true;
@@ -166,7 +166,7 @@ const MatchList = () => {
     // ⬅️ Dès le clic
     setShowModal(true);
     setModalState("loading");
-    setModalMessage("Envoi des prédictions...");
+    setModalMessage("Envoi des pronostics...");
 
     try {
       const response = await fetch("/api/bets", {
@@ -178,7 +178,7 @@ const MatchList = () => {
       if (response.ok) {
         // Succès → afficher succès
         setModalState("success");
-        setModalMessage("Prédictions enregistrées avec succès !");
+        setModalMessage("Pronostics enregistrés avec succès !");
 
         // Puis passer automatiquement en mode redirection
         setTimeout(() => {
@@ -189,7 +189,7 @@ const MatchList = () => {
 
       } else {
         setModalState("error");
-        setModalMessage("Erreur lors de l'enregistrement des prédictions.");
+        setModalMessage("Erreur lors de l'enregistrement des pronostics.");
       }
     } catch (error) {
       setModalState("error");
@@ -207,7 +207,7 @@ const MatchList = () => {
             <p className="text-sm">
               Ici, tu peux faire tes pronostics pour les matchs de groupes de la Coupe du monde 2026.
               Sélectionnes le vainqueur ou choisis une égalité en cliquant sur les options disponibles pour chaque match.
-              Une fois tes prédictions enregistrées, tu pourras les mettre à jour avant le début des matchs.
+              Une fois tes pronostics enregistrés, tu pourras les mettre à jour avant le début des matchs.
             </p>
             <p className="text-sm mt-2">
               Bonne chance et que le meilleur gagne !
@@ -326,7 +326,7 @@ const MatchList = () => {
           onClick={handleSubmit}
           className="mt-4 w-full bg-emerald-900 hover:bg-emerald-800 text-white font-bold py-2 px-4 border-b-4 border-emerald-500 hover:border-emerald-400 rounded"
         >
-          {session.user.has_bet === 0 ? "Envoyer mes prédictions" : "Mettre à jour mes prédictions"}
+          {session.user.has_bet === 0 ? "Envoyer mes pronostics" : "Mettre à jour mes pronostics"}
         </button>
       </div>
       {showModal && (

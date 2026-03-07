@@ -10,6 +10,20 @@ export async function GET(req) {
         // Sauvegarde les matchs dans la base de données
         await saveMatches(matches);
 
+        // Simuler des résultats pour les matchs de groupe (pour les tests)
+        const fakeResults = ["HOME_TEAM", "AWAY_TEAM", "DRAW"];
+        const groupStageMatches = matches.filter(m => m.stage === "GROUP_STAGE");
+        for (const match of groupStageMatches) {
+            const randomWinner = fakeResults[Math.floor(Math.random() * fakeResults.length)];
+            await prisma.matches.update({
+                where: { id: match.id },
+                data: {
+                    score_winner: randomWinner,
+                    status: "FINISHED",
+                },
+            });
+        }
+
         // Appeler la route pour calculer les points
         const calculatePointsResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/calculate-points`, {
             method: 'POST',
