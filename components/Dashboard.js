@@ -104,7 +104,21 @@ const Dashboard = () => {
             Meilleurs par groupe
           </h3>
 
-         
+          <div className="space-y-2">
+            {Object.entries(global.bestByGroup).map(([group, user]) => (
+              <div
+                key={group}
+                className="flex items-center justify-between bg-gray-700 p-3 rounded-lg"
+              >
+                <span className="text-gray-300 font-medium">
+                  Groupe {group}
+                </span>
+                <span className="text-emerald-400 font-semibold">
+                  {user.username} — {user.points} pts
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

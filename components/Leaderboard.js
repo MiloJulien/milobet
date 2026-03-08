@@ -28,8 +28,16 @@ const Leaderboard = () => {
   // On récupère les 3 premiers
   const top3 = leaderboard.slice(0, 3);
 
-  // On les réorganise : [2e, 1er, 3e]
-  const podium = [top3[1], top3[0], top3[2]];
+  // On remplit avec des "slots vides" pour éviter undefined
+  const safeTop3 = [
+    top3[0] ?? null,
+    top3[1] ?? null,
+    top3[2] ?? null,
+  ];
+
+  // Réorganisation podium : [2e, 1er, 3e]
+  const podium = [safeTop3[1], safeTop3[0], safeTop3[2]];
+
 
   const medalColors = [
     "bg-gradient-to-b from-yellow-300 via-yellow-500 to-yellow-700 text-white", // 1er
@@ -66,12 +74,21 @@ const Leaderboard = () => {
       {/* Podium */}
       <div className="flex justify-center items-end space-x-2 mb-8 h-48">
         {podium.map((player, index) => {
-          const realRank = leaderboard.indexOf(player); // 0 = 1er, 1 = 2e, 2 = 3e
+          if (!player) {
+            return (
+              <div key={"empty-" + index} className="flex flex-col items-center justify-end h-48 opacity-40">
+                <div className="w-27 h-20 rounded-xl flex items-center justify-center border-1 border-gray-600 bg-gray-700">
+                  <p className="text-white text-center">—</p>
+                </div>
+                <div className="w-27 h-10 mt-3 rounded bg-gray-700" />
+              </div>
+            );
+          }
+
+          const realRank = leaderboard.indexOf(player);
+
           return (
-            <div
-              key={player.id}
-              className="flex flex-col items-center justify-end h-48"
-            >
+            <div key={player.id} className="flex flex-col items-center justify-end h-48">
               <div className="w-27 h-20 rounded-xl flex items-center justify-center border-1 border-emerald-400 bg-gray-800">
                 <div>
                   <p className="text-white font-semibold mt-2 text-center max-w-[90px] truncate">
@@ -81,25 +98,25 @@ const Leaderboard = () => {
                   <div className="flex flex-col items-center text-emerald-400 font-bold text-lg mt-1">
                     <span className="flex items-center gap-1">
                       {player.points}
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-p-circle-fill" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.5 4.002V12h1.283V9.164h1.668C10.033 9.164 11 8.08 11 6.586c0-1.482-.955-2.584-2.538-2.584zm2.77 4.072c.893 0 1.419-.545 1.419-1.488s-.526-1.482-1.42-1.482H6.778v2.97z" />
-                      </svg>
+                      {/* icône */}
                     </span>
                   </div>
                 </div>
               </div>
-              <div
-                className={`w-27 ${podiumHeights[realRank]} mt-3 rounded flex items-center justify-center text-sm font-bold ${medalColors[realRank]}`}
-              >
+
+              <div className={`w-27 ${podiumHeights[realRank]} mt-3 rounded flex items-center justify-center text-sm font-bold ${medalColors[realRank]}`}>
                 {rankIcons[realRank]}
               </div>
             </div>
           );
         })}
+
       </div>
       {/* liste des autres joueurs */}
       <div className="space-y-3">
-        {leaderboard.slice(3).map((player, index) => (
+        {leaderboard.slice(3).map((player, index) => {
+          if (!player) return null;
+        return (
           <div
             key={player.id}
             className="flex items-center justify-between bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700"
@@ -129,7 +146,7 @@ const Leaderboard = () => {
             </div>
 
           </div>
-        ))}
+        )})}
       </div>
     </div>
   );
