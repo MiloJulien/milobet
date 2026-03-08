@@ -1,3 +1,5 @@
+export const revalidate = 60;
+
 import React, { useEffect, useState } from "react";
 
 const Dashboard = () => {

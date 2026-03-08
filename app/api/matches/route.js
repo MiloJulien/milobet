@@ -1,4 +1,5 @@
-// app/api/matches/route.js
+export const revalidate = 60;
+
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req) {
