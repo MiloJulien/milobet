@@ -4,7 +4,6 @@ import Connexion from '../components/Connexion';
 import Inscription from '../components/Inscription';
 import { useSession } from 'next-auth/react';
 import MatchList from '@/components/MatchList';
-import Dashboard from '@/components/Dashboard';
 import Leaderboard from '@/components/Leaderboard';
 import Footer from '@/components/Footer';
 import { useEffect } from "react";
@@ -17,7 +16,6 @@ export default function Home() {
 
   const tabComponents = [
     Leaderboard,
-    Dashboard,
     MatchList
   ];
 
