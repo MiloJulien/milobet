@@ -9,6 +9,8 @@ export async function POST(req) {
     const results = await getResults();               // Tous les matchs
     const predictions = await getUserPredictions();   // Tous les pronostics
 
+    await prisma.users.updateMany({ data: { points: 0 } }); // Reset points avant recalcul
+
     const userStats = {};   // Stats par user
     const matchStats = {};  // Stats par match
 
@@ -63,9 +65,14 @@ export async function POST(req) {
     });
 
     // Mettre à jour les points en base
-    for (const userId in userStats) {
-      await updateUserPoints(userId, userStats[userId].points);
-    }
+    await prisma.$transaction(
+      Object.entries(userStats).map(([userId, stats]) =>
+        prisma.users.update({
+          where: { id: parseInt(userId) },
+          data: { points: stats.points },
+        })
+      )
+    );
 
     return new Response(JSON.stringify({
       message: "Points calculés",
