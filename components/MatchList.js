@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useTabs } from "@/app/TabContext";
 
 const MatchList = () => {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const [matches, setMatches] = useState([]);
   const [bets, setBets] = useState([]); // Stocke les paris existants
   const [loading, setLoading] = useState(true);
@@ -51,7 +51,7 @@ const MatchList = () => {
     };
 
     fetchMatchesAndBets();
-  }, [session]);
+  }, [session?.user?.id]);
 
   if (status === 'loading') {
     return (
@@ -179,14 +179,13 @@ const MatchList = () => {
         // Succès → afficher succès
         setModalState("success");
         setModalMessage("Pronostics enregistrés avec succès !");
-
+        await update({ has_bet: 1 });
         // Puis passer automatiquement en mode redirection
         setTimeout(() => {
           setModalState("redirect");
           setModalMessage("Redirection...");
         }, 1200);
-        window.location.reload();
-
+        //window.location.reload();
       } else {
         setModalState("error");
         setModalMessage("Erreur lors de l'enregistrement des pronostics.");

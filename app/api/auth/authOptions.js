@@ -27,26 +27,26 @@ export const authOptions = {
     strategy: "jwt", // Utilise JWT pour les sessions
   },
   callbacks: {
-    async jwt({ token, user }) {
-      // Ajoute les données utilisateur au token lors de la connexion
+    async jwt({ token, user, trigger, session }) {
+      // 1. Connexion initiale — on stocke tout
       if (user) {
         token.id = user.id;
         token.email = user.email;
-        token.username = user.username; 
+        token.username = user.username;
         token.has_bet = user.has_bet;
         token.points = user.points;
       }
 
-      // Vérifie si le champ `bet` a changé dans la base de données uniquement si nécessaire
-      const updatedUser = await findUserByEmail(token.email); // Récupère les données utilisateur mises à jour
-      if (updatedUser && updatedUser.has_bet !== token.has_bet) {
-        token.has_bet = updatedUser.has_bet; // Met à jour le champ `bet` dans le token
+      // 2. Mise à jour manuelle via update() côté client
+      if (trigger === 'update' && session) {
+        token.has_bet = session.has_bet;
+        token.points = session.points;
       }
 
-      return token;
+      return token; // ← plus de DB query ici
     },
+
     async session({ session, token }) {
-      // Ajoute les données du token à la session côté client
       session.user = {
         id: token.id,
         email: token.email,

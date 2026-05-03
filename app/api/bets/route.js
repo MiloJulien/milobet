@@ -1,5 +1,3 @@
-export const revalidate = 60;
-
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/authOptions';
@@ -14,7 +12,6 @@ export async function GET(req) {
     }
 
     const userId = session.user.id;
-
     // Récupérer les paris de l'utilisateur
     const bets = await prisma.bet.findMany({
       where: { user_id: userId },
@@ -27,7 +24,13 @@ export async function GET(req) {
       prediction: b.prediction,
     }));
 
-    return NextResponse.json(formattedBets, { status: 200 });
+    // Dans ta route GET, ajoute ce header
+    return NextResponse.json(formattedBets, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'private, max-age=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     console.error('Erreur lors de la récupération des paris :', error);
     return NextResponse.json({ message: 'Erreur lors de la récupération des paris.' }, { status: 500 });
@@ -45,19 +48,17 @@ export async function POST(req) {
     const userId = session.user.id;
     const { predictions } = await req.json();
 
-    for (const [matchId, prediction] of Object.entries(predictions)) {
-      await prisma.bet.upsert({
+  await prisma.$transaction(
+    Object.entries(predictions).map(([matchId, prediction]) =>
+      prisma.bet.upsert({
         where: {
           user_id_match_id: { user_id: userId, match_id: parseInt(matchId) },
         },
         update: { prediction },
-        create: {
-          user_id: userId,
-          match_id: parseInt(matchId),
-          prediction,
-        },
-      });
-    }
+        create: { user_id: userId, match_id: parseInt(matchId), prediction },
+      })
+    )
+  )
 
     // Mettre à jour le champ `bet` de l'utilisateur à 1
     await prisma.users.update({
