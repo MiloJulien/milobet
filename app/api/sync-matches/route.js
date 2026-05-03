@@ -13,18 +13,18 @@ export async function GET(req) {
         await saveMatches(matches);
 
         // Simuler des résultats pour les matchs de groupe (pour les tests)
-        const fakeResults = ["HOME_TEAM", "AWAY_TEAM", "DRAW"];
-        const groupStageMatches = matches.filter(m => m.stage === "GROUP_STAGE");
-        for (const match of groupStageMatches) {
-            const randomWinner = fakeResults[Math.floor(Math.random() * fakeResults.length)];
-            await prisma.matches.update({
-                where: { id: match.id },
-                data: {
-                    score_winner: randomWinner,
-                    status: "FINISHED",
-                },
-            });
-        }
+        // const fakeResults = ["HOME_TEAM", "AWAY_TEAM", "DRAW"];
+        // const groupStageMatches = matches.filter(m => m.stage === "GROUP_STAGE");
+        // for (const match of groupStageMatches) {
+        //     const randomWinner = fakeResults[Math.floor(Math.random() * fakeResults.length)];
+        //     await prisma.matches.update({
+        //         where: { id: match.id },
+        //         data: {
+        //             score_winner: randomWinner,
+        //             status: "FINISHED",
+        //         },
+        //     });
+        // }
 
         revalidateTag('results');      // ← invalide le cache avant le calcul
         revalidateTag('predictions');
