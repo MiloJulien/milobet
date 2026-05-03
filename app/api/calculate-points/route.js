@@ -67,51 +67,8 @@ export async function POST(req) {
       await updateUserPoints(userId, userStats[userId].points);
     }
 
-    // Statistiques globales
-    const perfectForAll = Object.values(matchStats)
-      .filter(m => m.correct === m.total).length;
-
-    const noCorrect = Object.values(matchStats)
-      .filter(m => m.correct === 0).length;
-
-    const globalSuccessRate = Math.round(
-      (Object.values(userStats).reduce((acc, u) => acc + u.correct, 0) /
-       Object.values(userStats).reduce((acc, u) => acc + u.total, 0)) * 100
-    );
-
-    // Meilleur user par groupe
-    const bestByGroup = {};
-    for (const userId in userStats) {
-      const user = userStats[userId];
-      for (const group in user.groups) {
-        if (!bestByGroup[group] || user.points > bestByGroup[group].points) {
-          bestByGroup[group] = {
-            userId,
-            points: user.points
-          };
-        }
-      }
-    }
-
-    // Ajouter successRate, failRate, bestGroup
-    for (const userId in userStats) {
-      const u = userStats[userId];
-      u.successRate = Math.round((u.correct / u.total) * 100);
-      u.failRate = 100 - u.successRate;
-
-      u.bestGroup = Object.entries(u.groups)
-        .sort((a, b) => b[1].correct - a[1].correct)[0][0];
-    }
-
     return new Response(JSON.stringify({
-      message: "Stats calculées",
-      users: userStats,
-      global: {
-        perfectForAll,
-        noCorrect,
-        globalSuccessRate,
-        bestByGroup
-      }
+      message: "Points calculés",
     }), { status: 200 });
 
   } catch (error) {

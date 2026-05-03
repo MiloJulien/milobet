@@ -47,6 +47,12 @@ const Leaderboard = () => {
     "bg-gradient-to-b from-amber-600 via-amber-700 to-amber-900 text-white",      // 3e
   ];
 
+  const medalBorders = [
+    "border-yellow-500", // 1er
+    "border-gray-400",  // 2e
+    "border-amber-700", // 3e
+  ];
+
   const rankIcons = {
     0: (
       <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" className="bi bi-1-circle-fill" viewBox="0 0 16 16">
@@ -71,6 +77,18 @@ const Leaderboard = () => {
     2: "h-10", // 3e : plus bas
   };
 
+  const pointsColors = [
+    "text-yellow-500", // 1er
+    "text-gray-400",  // 2e
+    "text-amber-700", // 3e
+  ];
+
+  const pointsIcon = (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-p-circle-fill" viewBox="0 0 16 16">
+      <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.5 4.002V12h1.283V9.164h1.668C10.033 9.164 11 8.08 11 6.586c0-1.482-.955-2.584-2.538-2.584zm2.77 4.072c.893 0 1.419-.545 1.419-1.488s-.526-1.482-1.42-1.482H6.778v2.97z" />
+    </svg>
+  );
+
   return (
     <div className="container mx-auto p-4">
       {/* Podium */}
@@ -91,16 +109,16 @@ const Leaderboard = () => {
 
           return (
             <div key={player.id} className="flex flex-col items-center justify-end h-48">
-              <div className="w-27 h-20 rounded-xl flex items-center justify-center border-1 border-emerald-400 bg-gray-800">
+              <div className={`w-27 h-20 rounded-xl flex items-center justify-center border-3 ${medalBorders[realRank]} bg-gray-800`}>
                 <div>
                   <p className="text-white font-semibold mt-2 text-center max-w-[90px] truncate">
                     {player.username}
                   </p>
 
-                  <div className="flex flex-col items-center text-emerald-400 font-bold text-lg mt-1">
+                  <div className={`flex flex-col items-center font-bold text-lg mt-1 ${pointsColors[realRank]}`}>
                     <span className="flex items-center gap-1">
                       {player.points}
-                      {/* icône */}
+                      {pointsIcon}
                     </span>
                   </div>
                 </div>
@@ -142,9 +160,7 @@ const Leaderboard = () => {
             {/* Points */}
             <div className="text-emerald-400 font-bold text-lg flex items-center gap-1">
               <span>{player.points}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-p-circle-fill" viewBox="0 0 16 16">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.5 4.002V12h1.283V9.164h1.668C10.033 9.164 11 8.08 11 6.586c0-1.482-.955-2.584-2.538-2.584zm2.77 4.072c.893 0 1.419-.545 1.419-1.488s-.526-1.482-1.42-1.482H6.778v2.97z" />
-              </svg>
+              {pointsIcon}
             </div>
 
           </div>
