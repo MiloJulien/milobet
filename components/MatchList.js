@@ -84,23 +84,23 @@ const MatchList = () => {
     "Mexico": "Mexique",
     "South Africa": "Afrique du Sud",
     "South Korea": "Corée du Sud",
-    //dernier groupe A
+    "Czechia": "Tchéquie",
     "Switzerland": "Suisse",
-    //dernier groupe B
+    "Bosnia-Herzegovina": "Bosnie",
     "Brazil": "Brésil",
     "Morocco": "Maroc",
     "Haiti": "Haïti",
     "Scotland": "Écosse",
     "United States": "États-Unis",
     "Australia": "Australie",
-    //dernier groupe D
+    "Turkey": "Turquie",
     "Germany": "Allemagne",
     "Ivory Coast": "Côte d'Ivoire",
     "Ecuador": "Équateur",
     "Netherlands": "Pays-Bas",
     "Japan": "Japon",
     "Tunisia": "Tunisie",
-    //dernier groupe F
+    "Sweden": "Suède",
     "Belgium": "Belgique",
     "Egypt": "Égypte",
     "New Zealand": "Nouvelle-Zélande",
@@ -108,13 +108,13 @@ const MatchList = () => {
     "Cape Verde Islands": "Cap-Vert",
     "Saudi Arabia": "Arabie Saoudite",
     "Senegal": "Sénégal",
-    //dernier groupe I
+    "Iraq": "Irak",
     "Norway": "Norvège",
     "Argentina": "Argentine",
     "Algeria": "Algérie",
     "Austria": "Autriche",
     "Jordan": "Jordanie",
-    //dernier groupe K
+    "Congo DR": "RD Congo",
     "Uzbekistan": "Ouzbékistan",
     "Colombia": "Colombie",
     "England": "Angleterre",
