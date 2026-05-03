@@ -1,16 +1,8 @@
-export const revalidate = 60;
-
-import { prisma } from '@/lib/prisma';
+import { getMatches } from '@/lib/dbService';
 
 export async function GET(req) {
   try {
-    const matches = await prisma.matches.findMany({
-      orderBy: [
-        { group_name: 'asc' },
-        { utc_date: 'asc' }
-      ]
-    });
-
+    const matches = await getMatches();
     return new Response(JSON.stringify(matches), { status: 200 });
   } catch (error) {
     console.error('Erreur lors de la récupération des matchs :', error);

@@ -1,20 +1,9 @@
 // app/api/leaderboard/route.js
-import { prisma } from "@/lib/prisma";
+import { getLeaderboard } from '@/lib/dbService';
 
 export async function GET(req) {
   try {
-    const users = await prisma.users.findMany({
-      select: {
-        id: true,
-        username: true,
-        points: true,
-        has_bet: true
-      },
-      orderBy: {
-        points: 'desc',
-      },
-    });
-
+    const users = await getLeaderboard();
     return new Response(JSON.stringify(users), { status: 200 });
   } catch (error) {
     console.error("Erreur lors de la récupération du classement :", error);
