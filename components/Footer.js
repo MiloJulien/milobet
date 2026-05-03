@@ -65,7 +65,7 @@ export default function Footer() {
         </div>
 
         {/* Séparation visuelle */}
-        <div className="h-8 border-l border-gray-600 mx-1"></div>
+        {/* <div className="h-8 border-l border-gray-600 mx-1"></div> */}
 
         {/* Bouton de déconnexion */}
         {session && (

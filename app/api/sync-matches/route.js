@@ -1,7 +1,7 @@
 import { fetchFootballData } from '@/lib/footballApi'
 import { saveMatches } from '@/lib/dbService'
 import { prisma } from '@/lib/prisma'
-import { revalidateTag } from 'next/cache' 
+import { revalidateTag } from 'next/cache'
 
 export async function GET(req) {
     try {
@@ -11,11 +11,14 @@ export async function GET(req) {
 
         // Sauvegarde les matchs dans la base de données
         await saveMatches(matches);
-
+        revalidateTag('matches');
         // Simuler des résultats pour les matchs de groupe (pour les tests)
+        // Laisser les 20 derniers matchs sans résultats simulés
         // const fakeResults = ["HOME_TEAM", "AWAY_TEAM", "DRAW"];
         // const groupStageMatches = matches.filter(m => m.stage === "GROUP_STAGE");
-        // for (const match of groupStageMatches) {
+        // const matchesToSimulate = groupStageMatches.slice(0, groupStageMatches.length - 20);
+        
+        // for (const match of matchesToSimulate) {
         //     const randomWinner = fakeResults[Math.floor(Math.random() * fakeResults.length)];
         //     await prisma.matches.update({
         //         where: { id: match.id },
@@ -38,7 +41,7 @@ export async function GET(req) {
             throw new Error('Erreur lors du calcul des points.');
         }
 
-         revalidateTag('leaderboard');
+        revalidateTag('leaderboard');
 
         return new Response(JSON.stringify({ message: 'Matchs synchronisés et points calculés avec succès.' }), { status: 200 });
     } catch (error) {

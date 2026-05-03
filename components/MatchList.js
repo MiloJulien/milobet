@@ -3,6 +3,8 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useTabs } from "@/app/TabContext";
 
+const TOURNAMENT_START_DATE = new Date("2026-06-11T19:00:00");
+
 const MatchList = () => {
   const { data: session, update } = useSession();
   const [matches, setMatches] = useState([]);
@@ -16,6 +18,11 @@ const MatchList = () => {
   const [modalState, setModalState] = useState("loading");
   const [modalMessage, setModalMessage] = useState("");
   const { setActiveTab } = useTabs();
+
+  // Vérifie si la phase de groupes est active (avant le 11 juin 2026 19h)
+  const isGroupStageActive = () => {
+    return new Date() < TOURNAMENT_START_DATE;
+  };
 
 
   useEffect(() => {
@@ -130,6 +137,54 @@ const MatchList = () => {
     return src;
   };
 
+  // Détermine le gagnant réel d'un match
+  const getMatchWinner = (match) => match.score_winner;
+
+  // Vérifie si un match est terminé
+  const isMatchFinished = (match) => {
+    return match.status === "FINISHED";
+  };
+
+  // Vérifie si le pronostic est correct pour un match terminé
+  const isMatchPredictionCorrect = (match) => {
+    if (!isMatchFinished(match)) return null;
+    const winner = getMatchWinner(match);
+    return predictions[match.id] === winner;
+  };
+
+  // Détermine les classes CSS pour une option de prédiction
+  const getPredictionCardClass = (match, optionValue) => {
+    const baseClass = "w-22 min-h-[120px] border-3 rounded-xl px-3 py-2 flex flex-col items-center justify-center gap-2";
+    const disabledClass = !isGroupStageActive() ? "cursor-not-allowed" : "";
+    
+    if (!isMatchFinished(match)) {
+      // Match non terminé: style normal
+      // Bleu pour la sélection active (avant le match)
+      const isSelected = predictions[match.id] === optionValue;
+      return `${baseClass} ${isSelected ? "border-blue-500 bg-blue-950" : ""} ${disabledClass}`;
+    }
+
+    // Match terminé
+    const actualWinner = getMatchWinner(match);
+    const userPrediction = predictions[match.id];
+    const isUserCorrect = userPrediction === actualWinner;
+
+    if (userPrediction === optionValue) {
+      // C'est le pronostic de l'utilisateur
+      return isUserCorrect
+        ? `${baseClass} border-emerald-500 bg-emerald-950 ${disabledClass}` // Correct: vert ✅
+        : `${baseClass} border-red-500 bg-red-950 ${disabledClass}`; // Incorrect: rouge ❌
+    }
+
+    if (actualWinner === optionValue && !isUserCorrect) {
+      // C'est le bon résultat et l'utilisateur s'est trompé
+      return `${baseClass} border-lime-500 bg-lime-950 ${disabledClass}`; // Bon résultat: jaune 💡
+    }
+
+    // Autres options: style neutre
+    return `${baseClass} opacity-50 ${disabledClass}`;
+  };
+
   // Met à jour le pronostic pour un match spécifique
   const handlePredictionChange = (matchId, prediction) => {
     setPredictions((prev) => ({
@@ -143,6 +198,14 @@ const MatchList = () => {
   };
 
   const handleSubmit = async () => {
+    // Vérifier si la phase de groupes est terminée
+    if (!isGroupStageActive()) {
+      setShowModal(true);
+      setModalState("error");
+      setModalMessage("Les paris sur la phase de groupes sont fermés. La compétition a commencé !");
+      return;
+    }
+
     const newErrors = {};
     let firstErrorFound = false;
 
@@ -163,7 +226,7 @@ const MatchList = () => {
       return;
     }
 
-    // ⬅️ Dès le clic
+    // Dès le clic
     setShowModal(true);
     setModalState("loading");
     setModalMessage("Envoi des pronostics...");
@@ -200,7 +263,7 @@ const MatchList = () => {
   return (
     <section>
       <div className="container mx-auto p-4">
-        {session.user.has_bet === 0 && (
+        {session.user.has_bet === 0 && isGroupStageActive() && (
           <div className="bg-emerald-800 text-white p-4 rounded-lg shadow-md mb-6">
             <h2 className="text-xl font-bold mb-2">Bienvenue sur MiloBet {session.user.username} !</h2>
             <p className="text-sm">
@@ -217,7 +280,7 @@ const MatchList = () => {
           {matches.map((match) => (
             <div key={match.id} id={`match-${match.id}`} className="bg-gray-800 rounded-lg">
               <div className="p-2 border-b-1 border-emerald-700">
-                <h3 className="font-bold text-center">
+                <h3 className={`font-bold text-center ${isMatchFinished(match) ? "opacity-50" : ""}`}>
                   {formatGroupName(match.group_name)} - {new Date(match.utc_date).toLocaleString("fr-FR", {
                     day: "2-digit",
                     month: "2-digit",
@@ -237,10 +300,11 @@ const MatchList = () => {
                       className="hidden peer"
                       checked={predictions[match.id] === "HOME_TEAM"}
                       onChange={() => handlePredictionChange(match.id, "HOME_TEAM")}
+                      disabled={!isGroupStageActive()}
                     />
                     <label
                       htmlFor={`home-${match.id}`}
-                      className="w-22 min-h-[120px] border-3 rounded-xl px-3 py-2 flex flex-col items-center justify-center gap-2 peer-checked:border-emerald-500 peer-checked:bg-emerald-950"
+                      className={getPredictionCardClass(match, "HOME_TEAM")}
                     >
                       {safeSrc(match.home_team_crest) ? (
                         <Image
@@ -267,10 +331,11 @@ const MatchList = () => {
                       className="hidden peer"
                       checked={predictions[match.id] === "DRAW"}
                       onChange={() => handlePredictionChange(match.id, "DRAW")}
+                      disabled={!isGroupStageActive()}
                     />
                     <label
                       htmlFor={`draw-${match.id}`}
-                      className="w-22 min-h-[120px] border-3 rounded-xl px-3 py-2 flex flex-col items-center justify-center gap-2 peer-checked:border-emerald-500 peer-checked:bg-emerald-950"
+                      className={getPredictionCardClass(match, "DRAW")}
                     >
                       <Image
                         src="/images/logos/logo.png"
@@ -292,10 +357,11 @@ const MatchList = () => {
                       className="hidden peer"
                       checked={predictions[match.id] === "AWAY_TEAM"}
                       onChange={() => handlePredictionChange(match.id, "AWAY_TEAM")}
+                      disabled={!isGroupStageActive()}
                     />
                     <label
                       htmlFor={`away-${match.id}`}
-                      className="w-22 min-h-[120px] border-3 rounded-xl px-3 py-2 flex flex-col items-center justify-center gap-2 peer-checked:border-emerald-500 peer-checked:bg-emerald-950"
+                      className={getPredictionCardClass(match, "AWAY_TEAM")}
                     >
                       {safeSrc(match.away_team_crest) ? (
                         <Image
@@ -323,9 +389,18 @@ const MatchList = () => {
         </div>
         <button
           onClick={handleSubmit}
-          className="mt-4 w-full bg-emerald-900 hover:bg-emerald-800 text-white font-bold py-2 px-4 border-b-4 border-emerald-500 hover:border-emerald-400 rounded"
+          disabled={!isGroupStageActive()}
+          className={`mt-4 w-full font-bold py-2 px-4 border-b-4 rounded ${
+            isGroupStageActive()
+              ? "bg-emerald-900 hover:bg-emerald-800 text-white border-emerald-500 hover:border-emerald-400"
+              : "bg-gray-600 text-gray-400 border-gray-500 cursor-not-allowed"
+          }`}
         >
-          {session.user.has_bet === 0 ? "Envoyer mes pronostics" : "Mettre à jour mes pronostics"}
+          {!isGroupStageActive()
+            ? "Paris fermés - Phase de groupes terminée"
+            : session.user.has_bet === 0
+            ? "Envoyer mes pronostics"
+            : "Mettre à jour mes pronostics"}
         </button>
       </div>
       {showModal && (
