@@ -5,6 +5,7 @@ import Inscription from '../components/Inscription';
 import { useSession } from 'next-auth/react';
 import MatchList from '@/components/MatchList';
 import Leaderboard from '@/components/Leaderboard';
+import Stats from '@/components/Stats';
 import Footer from '@/components/Footer';
 import { useEffect } from "react";
 import { useTabs } from "@/app/TabContext";
@@ -16,7 +17,8 @@ export default function Home() {
 
   const tabComponents = [
     Leaderboard,
-    MatchList
+    MatchList,
+    Stats
   ];
 
   const deadline = new Date("2026-06-11");
