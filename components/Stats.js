@@ -150,7 +150,7 @@ export default function Stats() {
                       <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[0] }}></div>
                       <div className="flex justify-between flex-1">
                         <p className="text-white text-xs font-bold">{team1Translated}</p>
-                        <p className="text-gray-400 text-xs">{match.stats.home} ({home_pct}%)</p>
+                        <p className="text-gray-400 text-xs">{match.stats.home} pronostics ({home_pct}%)</p>
                       </div>
                     </div>
                   )}
@@ -159,7 +159,7 @@ export default function Stats() {
                       <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[1] }}></div>
                       <div className="flex justify-between flex-1">
                         <p className="text-white text-xs font-bold">Nul</p>
-                        <p className="text-gray-400 text-xs">{match.stats.draw} ({draw_pct}%)</p>
+                        <p className="text-gray-400 text-xs">{match.stats.draw} pronostics ({draw_pct}%)</p>
                       </div>
                     </div>
                   )}
@@ -168,7 +168,7 @@ export default function Stats() {
                       <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[2] }}></div>
                       <div className="flex justify-between flex-1">
                         <p className="text-white text-xs font-bold">{team2Translated}</p>
-                        <p className="text-gray-400 text-xs">{match.stats.away} ({away_pct}%)</p>
+                        <p className="text-gray-400 text-xs">{match.stats.away} pronostics ({away_pct}%)</p>
                       </div>
                     </div>
                   )}
