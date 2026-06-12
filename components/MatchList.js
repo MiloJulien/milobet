@@ -277,7 +277,7 @@ const MatchList = () => {
           </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {matches.map((match) => (
+          {[...matches].sort((a, b) => new Date(a.utc_date) - new Date(b.utc_date)).map((match) => (
             <div key={match.id} id={`match-${match.id}`} className="bg-gray-800 rounded-lg">
               <div className="p-2 border-b-1 border-emerald-700">
                 <h3 className={`font-bold text-center ${isMatchFinished(match) ? "opacity-50" : ""}`}>

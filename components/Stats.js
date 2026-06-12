@@ -100,7 +100,7 @@ export default function Stats() {
   return (
     <div className="container mx-auto p-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {matches.map((match) => {
+        {[...matches].sort((a, b) => new Date(a.utc_date) - new Date(b.utc_date)).map((match) => {
           const totalBets = match.total;
           const home_pct = totalBets > 0 ? ((match.stats.home / totalBets) * 100).toFixed(1) : 0;
           const draw_pct = totalBets > 0 ? ((match.stats.draw / totalBets) * 100).toFixed(1) : 0;
@@ -109,15 +109,25 @@ export default function Stats() {
           const team1Translated = translateTeam(match.team1);
           const team2Translated = translateTeam(match.team2);
 
+          const isFinished = match.status === 'FINISHED';
+          
           return (
-            <div key={match.id} className="bg-gray-800 rounded-lg">
-              <div className="p-2 border-b-1 border-emerald-700">
-                <h3 className="font-bold text-center">
+            <div key={match.id} className={`rounded-lg ${
+              isFinished ? 'bg-gray-800 opacity-75' : 'bg-gray-800'
+            }`}>
+              <div className={`p-2 border-b-1 ${
+                isFinished ? 'border-emerald-700' : 'border-emerald-700'
+              }`}>
+                <h3 className={`font-bold text-center ${
+                  isFinished ? 'text-white' : 'text-white'
+                }`}>
                   {team1Translated} - {team2Translated}
                 </h3>
               </div>
-              <div className="p-4">
-                <div className="w-full bg-gray-700 rounded-lg h-6 overflow-hidden flex mb-6" style={{ boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)" }}>
+              <div className={`p-4 ${isFinished ? 'opacity-75' : ''}`}>
+                <div className={`w-full rounded-lg h-6 overflow-hidden flex mb-6 ${
+                  isFinished ? 'bg-gray-600' : 'bg-gray-700'
+                }`} style={{ boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)" }}>
                   {match.stats.home > 0 && (
                     <div 
                       className="h-full flex items-center justify-center" 

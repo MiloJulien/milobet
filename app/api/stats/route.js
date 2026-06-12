@@ -9,13 +9,15 @@ export async function GET(req) {
         m.id,
         m.home_team_name,
         m.away_team_name,
+        m.utc_date,
+        m.status,
         COALESCE(SUM(CASE WHEN b.prediction = 'HOME_TEAM' THEN 1 ELSE 0 END), 0) as home_count,
         COALESCE(SUM(CASE WHEN b.prediction = 'DRAW' THEN 1 ELSE 0 END), 0) as draw_count,
         COALESCE(SUM(CASE WHEN b.prediction = 'AWAY_TEAM' THEN 1 ELSE 0 END), 0) as away_count
       FROM matches m
       LEFT JOIN bet b ON m.id = b.match_id
-      GROUP BY m.id, m.home_team_name, m.away_team_name
-      ORDER BY m.id ASC
+      GROUP BY m.id, m.home_team_name, m.away_team_name, m.utc_date, m.status
+      ORDER BY m.utc_date ASC
     `;
 
     // Formater les données
@@ -26,6 +28,8 @@ export async function GET(req) {
         id: row.id,
         team1: row.home_team_name,
         team2: row.away_team_name,
+        utc_date: row.utc_date,
+        status: row.status,
         stats: {
           home: Number(row.home_count),
           draw: Number(row.draw_count),
