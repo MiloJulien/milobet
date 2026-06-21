@@ -187,7 +187,7 @@ const MatchList = () => {
     }
 
     // Autres options: style neutre
-    return `${baseClass} opacity-50 ${disabledClass}`;
+    return `${baseClass} opacity-80 ${disabledClass}`;
   };
 
   // Met à jour le pronostic pour un match spécifique
@@ -296,7 +296,7 @@ const MatchList = () => {
               {matchList.map((match) => (
                 <div key={match.id} id={`match-${match.id}`} className="bg-gray-800 rounded-lg border border-gray-600">
                   <div className="p-2 border-b-1 border-emerald-700">
-                    <h3 className={`font-bold text-center ${isMatchFinished(match) ? "opacity-50" : ""}`}>
+                    <h3 className={`font-bold text-center ${isMatchFinished(match) ? "opacity-80" : ""}`}>
                       {formatGroupName(match.group_name)} - {new Date(match.utc_date).toLocaleString("fr-FR", {
                         day: "2-digit",
                         month: "2-digit",
@@ -408,7 +408,7 @@ const MatchList = () => {
           return (
             <>
               {/* Accordion - À venir */}
-              <div className="mb-4 bg-gray-800 rounded-lg overflow-hidden">
+              <div className="mb-4 bg-slate-900 rounded-lg overflow-hidden">
                 <button
                   onClick={() => toggleAccordion('upcoming')}
                   className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
@@ -424,7 +424,7 @@ const MatchList = () => {
               </div>
 
               {/* Accordion - Terminés */}
-              <div className="mb-4 bg-gray-800 rounded-lg overflow-hidden">
+              <div className="mb-4 bg-slate-900 rounded-lg overflow-hidden">
                 <button
                   onClick={() => toggleAccordion('finished')}
                   className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"

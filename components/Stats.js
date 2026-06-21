@@ -124,7 +124,7 @@ export default function Stats() {
         
         return (
           <div key={match.id} className={`rounded-lg border border-gray-600 ${
-            isFinished ? 'bg-gray-900 opacity-75' : 'bg-gray-800'
+            isFinished ? 'bg-gray-800 opacity-80' : 'bg-gray-800'
           }`}>
             <div className="p-2 border-b-1 border-emerald-700">
               <h3 className="font-bold text-center text-white">
@@ -136,7 +136,7 @@ export default function Stats() {
                     style={{ boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)" }}>
                 {match.stats.home > 0 && (
                   <div 
-                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (homeWon ? ' opacity-100' : ' opacity-40'))}
+                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (homeWon ? ' opacity-100' : ' opacity-80'))}
                     style={{ 
                       width: `${home_pct}%`, 
                       backgroundColor: colorPalette.colors[0], 
@@ -150,7 +150,7 @@ export default function Stats() {
                 )}
                 {match.stats.draw > 0 && (
                   <div 
-                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (isDraw ? ' opacity-100' : ' opacity-40'))}
+                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (isDraw ? ' opacity-100' : ' opacity-80'))}
                     style={{ 
                       width: `${draw_pct}%`, 
                       backgroundColor: colorPalette.colors[1], 
@@ -164,7 +164,7 @@ export default function Stats() {
                 )}
                 {match.stats.away > 0 && (
                   <div 
-                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (awayWon ? ' opacity-100' : ' opacity-40'))}
+                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (awayWon ? ' opacity-100' : ' opacity-80'))}
                     style={{ 
                       width: `${away_pct}%`, 
                       backgroundColor: colorPalette.colors[2], 
@@ -217,7 +217,7 @@ export default function Stats() {
   return (
     <div className="container mx-auto p-4">
       {/* Accordion - À venir */}
-      <div className="mb-4 bg-gray-800 rounded-lg overflow-hidden">
+      <div className="mb-4 bg-slate-900 rounded-lg overflow-hidden">
         <button
           onClick={() => toggleAccordion('upcoming')}
           className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
@@ -233,7 +233,7 @@ export default function Stats() {
       </div>
 
       {/* Accordion - Terminés */}
-      <div className="mb-4 bg-gray-800 rounded-lg overflow-hidden">
+      <div className="mb-4 bg-slate-900 rounded-lg overflow-hidden">
         <button
           onClick={() => toggleAccordion('finished')}
           className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
