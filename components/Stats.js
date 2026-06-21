@@ -6,6 +6,7 @@ export default function Stats() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [openAccordions, setOpenAccordions] = useState({ upcoming: true, ongoing: true, finished: true });
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -97,96 +98,154 @@ export default function Stats() {
     );
   }
 
-  return (
-    <div className="container mx-auto p-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[...matches].sort((a, b) => new Date(a.utc_date) - new Date(b.utc_date)).map((match) => {
-          const totalBets = match.total;
-          const home_pct = totalBets > 0 ? ((match.stats.home / totalBets) * 100).toFixed(1) : 0;
-          const draw_pct = totalBets > 0 ? ((match.stats.draw / totalBets) * 100).toFixed(1) : 0;
-          const away_pct = totalBets > 0 ? ((match.stats.away / totalBets) * 100).toFixed(1) : 0;
-          
-          const team1Translated = translateTeam(match.team1);
-          const team2Translated = translateTeam(match.team2);
+  // Grouper les matches par statut
+  const upcomingMatches = matches.filter(m => m.status !== 'FINISHED').sort((a, b) => new Date(a.utc_date) - new Date(b.utc_date));
+  const finishedMatches = matches.filter(m => m.status === 'FINISHED').sort((a, b) => new Date(b.utc_date) - new Date(a.utc_date));
 
-          const isFinished = match.status === 'FINISHED';
-          
-          return (
-            <div key={match.id} className={`rounded-lg ${
-              isFinished ? 'bg-gray-800 opacity-75' : 'bg-gray-800'
-            }`}>
-              <div className={`p-2 border-b-1 ${
-                isFinished ? 'border-emerald-700' : 'border-emerald-700'
-              }`}>
-                <h3 className={`font-bold text-center ${
-                  isFinished ? 'text-white' : 'text-white'
-                }`}>
-                  {team1Translated} - {team2Translated}
-                </h3>
+  const toggleAccordion = (key) => {
+    setOpenAccordions(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const MatchGrid = ({ matchList }) => (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {matchList.map((match) => {
+        const totalBets = match.total;
+        const home_pct = totalBets > 0 ? ((match.stats.home / totalBets) * 100).toFixed(1) : 0;
+        const draw_pct = totalBets > 0 ? ((match.stats.draw / totalBets) * 100).toFixed(1) : 0;
+        const away_pct = totalBets > 0 ? ((match.stats.away / totalBets) * 100).toFixed(1) : 0;
+        
+        const team1Translated = translateTeam(match.team1);
+        const team2Translated = translateTeam(match.team2);
+
+        const isFinished = match.status === 'FINISHED';
+        const isDraw = match.score_winner === 'DRAW';
+        const homeWon = match.score_winner === 'HOME_TEAM';
+        const awayWon = match.score_winner === 'AWAY_TEAM';
+        
+        return (
+          <div key={match.id} className={`rounded-lg border border-gray-600 ${
+            isFinished ? 'bg-gray-900 opacity-75' : 'bg-gray-800'
+          }`}>
+            <div className="p-2 border-b-1 border-emerald-700">
+              <h3 className="font-bold text-center text-white">
+                {team1Translated} - {team2Translated}
+              </h3>
+            </div>
+            <div className="p-4">
+              <div className={`w-full rounded-lg h-6 overflow-hidden flex mb-6 bg-gray-700`} 
+                    style={{ boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)" }}>
+                {match.stats.home > 0 && (
+                  <div 
+                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (homeWon ? ' opacity-100' : ' opacity-40'))}
+                    style={{ 
+                      width: `${home_pct}%`, 
+                      backgroundColor: colorPalette.colors[0], 
+                      boxShadow: homeWon && isFinished 
+                        ? "0 0 15px rgba(16, 185, 129, 0.8), inset 0 1px 2px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.4)" 
+                        : "0 4px 6px rgba(0,0,0,0.3)"
+                    }}
+                  >
+                    <span className="font-bold text-sm text-white">{match.stats.home}</span>
+                  </div>
+                )}
+                {match.stats.draw > 0 && (
+                  <div 
+                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (isDraw ? ' opacity-100' : ' opacity-40'))}
+                    style={{ 
+                      width: `${draw_pct}%`, 
+                      backgroundColor: colorPalette.colors[1], 
+                      boxShadow: isDraw && isFinished 
+                        ? "0 0 15px rgba(255, 255, 255, 0.8), inset 0 1px 2px rgba(255,255,255,0.5), 0 4px 8px rgba(0,0,0,0.4)" 
+                        : "0 4px 6px rgba(0,0,0,0.3)"
+                    }}
+                  >
+                    <span className="font-bold text-sm text-gray-900">{match.stats.draw}</span>
+                  </div>
+                )}
+                {match.stats.away > 0 && (
+                  <div 
+                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (awayWon ? ' opacity-100' : ' opacity-40'))}
+                    style={{ 
+                      width: `${away_pct}%`, 
+                      backgroundColor: colorPalette.colors[2], 
+                      boxShadow: awayWon && isFinished 
+                        ? "0 0 15px rgba(239, 68, 68, 0.8), inset 0 1px 2px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.4)" 
+                        : "0 4px 6px rgba(0,0,0,0.3)"
+                    }}
+                  >
+                    <span className="font-bold text-sm text-white">{match.stats.away}</span>
+                  </div>
+                )}
               </div>
-              <div className={`p-4 ${isFinished ? 'opacity-75' : ''}`}>
-                <div className={`w-full rounded-lg h-6 overflow-hidden flex mb-6 ${
-                  isFinished ? 'bg-gray-600' : 'bg-gray-700'
-                }`} style={{ boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)" }}>
-                  {match.stats.home > 0 && (
-                    <div 
-                      className="h-full flex items-center justify-center" 
-                      style={{ width: `${home_pct}%`, backgroundColor: colorPalette.colors[0], boxShadow: "0 4px 6px rgba(0,0,0,0.3)" }}
-                    >
-                      <span className="font-bold text-sm text-white">{match.stats.home}</span>
-                    </div>
-                  )}
-                  {match.stats.draw > 0 && (
-                    <div 
-                      className="h-full flex items-center justify-center" 
-                      style={{ width: `${draw_pct}%`, backgroundColor: colorPalette.colors[1], boxShadow: "0 4px 6px rgba(0,0,0,0.3)" }}
-                    >
-                      <span className="font-bold text-sm text-gray-900">{match.stats.draw}</span>
-                    </div>
-                  )}
-                  {match.stats.away > 0 && (
-                    <div 
-                      className="h-full flex items-center justify-center" 
-                      style={{ width: `${away_pct}%`, backgroundColor: colorPalette.colors[2], boxShadow: "0 4px 6px rgba(0,0,0,0.3)" }}
-                    >
-                      <span className="font-bold text-sm text-white">{match.stats.away}</span>
-                    </div>
-                  )}
-                </div>
 
-                <div className="space-y-2">
-                  {match.stats.home > 0 && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[0] }}></div>
-                      <div className="flex justify-between flex-1">
-                        <p className="text-white text-xs font-bold">{team1Translated}</p>
-                        <p className="text-gray-400 text-xs">{match.stats.home} pronostics ({home_pct}%)</p>
-                      </div>
+              <div className="space-y-2">
+                {match.stats.home > 0 && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[0] }}></div>
+                    <div className="flex justify-between flex-1">
+                      <p className="text-white text-xs font-bold">{team1Translated}</p>
+                      <p className="text-gray-400 text-xs">{match.stats.home} pronostics ({home_pct}%)</p>
                     </div>
-                  )}
-                  {match.stats.draw > 0 && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[1] }}></div>
-                      <div className="flex justify-between flex-1">
-                        <p className="text-white text-xs font-bold">Nul</p>
-                        <p className="text-gray-400 text-xs">{match.stats.draw} pronostics ({draw_pct}%)</p>
-                      </div>
+                  </div>
+                )}
+                {match.stats.draw > 0 && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[1] }}></div>
+                    <div className="flex justify-between flex-1">
+                      <p className="text-white text-xs font-bold">Nul</p>
+                      <p className="text-gray-400 text-xs">{match.stats.draw} pronostics ({draw_pct}%)</p>
                     </div>
-                  )}
-                  {match.stats.away > 0 && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[2] }}></div>
-                      <div className="flex justify-between flex-1">
-                        <p className="text-white text-xs font-bold">{team2Translated}</p>
-                        <p className="text-gray-400 text-xs">{match.stats.away} pronostics ({away_pct}%)</p>
-                      </div>
+                  </div>
+                )}
+                {match.stats.away > 0 && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[2] }}></div>
+                    <div className="flex justify-between flex-1">
+                      <p className="text-white text-xs font-bold">{team2Translated}</p>
+                      <p className="text-gray-400 text-xs">{match.stats.away} pronostics ({away_pct}%)</p>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
-          );
-        })}
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  return (
+    <div className="container mx-auto p-4">
+      {/* Accordion - À venir */}
+      <div className="mb-4 bg-gray-800 rounded-lg overflow-hidden">
+        <button
+          onClick={() => toggleAccordion('upcoming')}
+          className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
+        >
+          <span>À venir ({upcomingMatches.length})</span>
+          <span className={`transform transition-transform ${openAccordions.upcoming ? 'rotate-180' : ''}`}>▼</span>
+        </button>
+        {openAccordions.upcoming && (
+          <div className="p-4">
+            <MatchGrid matchList={upcomingMatches} />
+          </div>
+        )}
+      </div>
+
+      {/* Accordion - Terminés */}
+      <div className="mb-4 bg-gray-800 rounded-lg overflow-hidden">
+        <button
+          onClick={() => toggleAccordion('finished')}
+          className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
+        >
+          <span>Terminés ({finishedMatches.length})</span>
+          <span className={`transform transition-transform ${openAccordions.finished ? 'rotate-180' : ''}`}>▼</span>
+        </button>
+        {openAccordions.finished && (
+          <div className="p-4">
+            <MatchGrid matchList={finishedMatches} />
+          </div>
+        )}
       </div>
     </div>
   );

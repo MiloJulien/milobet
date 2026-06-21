@@ -17,11 +17,16 @@ const MatchList = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalState, setModalState] = useState("loading");
   const [modalMessage, setModalMessage] = useState("");
+  const [openAccordions, setOpenAccordions] = useState({ upcoming: true, finished: true });
   const { setActiveTab } = useTabs();
 
   // Vérifie si la phase de groupes est active (avant le 11 juin 2026 19h)
   const isGroupStageActive = () => {
     return new Date() < TOURNAMENT_START_DATE;
+  };
+
+  const toggleAccordion = (key) => {
+    setOpenAccordions(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
 
@@ -276,121 +281,170 @@ const MatchList = () => {
             </p>
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[...matches].sort((a, b) => new Date(a.utc_date) - new Date(b.utc_date)).map((match) => (
-            <div key={match.id} id={`match-${match.id}`} className="bg-gray-800 rounded-lg">
-              <div className="p-2 border-b-1 border-emerald-700">
-                <h3 className={`font-bold text-center ${isMatchFinished(match) ? "opacity-50" : ""}`}>
-                  {formatGroupName(match.group_name)} - {new Date(match.utc_date).toLocaleString("fr-FR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </h3>
-              </div>
-              <div className="p-3">
-                <ul className="flex items-center justify-center space-x-4">
-                  <li>
-                    <input
-                      type="radio"
-                      id={`home-${match.id}`}
-                      name={`match-${match.id}`}
-                      value="HOME_TEAM"
-                      className="hidden peer"
-                      checked={predictions[match.id] === "HOME_TEAM"}
-                      onChange={() => handlePredictionChange(match.id, "HOME_TEAM")}
-                      disabled={!isGroupStageActive()}
-                    />
-                    <label
-                      htmlFor={`home-${match.id}`}
-                      className={getPredictionCardClass(match, "HOME_TEAM")}
-                    >
-                      {safeSrc(match.home_team_crest) ? (
-                        <Image
-                          src={match.home_team_crest}
-                          alt={`${match.home_team_name} crest`}
-                          className="w-12 h-12 object-cover rounded-full"
-                          width={256}
-                          height={256}
-                          unoptimized
-                        />) : (<div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-xs"> ? </div>)}
-                      <span className="text-sm text-center leading-tight">
-                        {safeSrc(match.home_team_crest) ? (
-                          translateCountry(match.home_team_name)
-                        ) : ("Pays inconnu")}
-                      </span>
-                    </label>
-                  </li>
-                  <li>
-                    <input
-                      type="radio"
-                      id={`draw-${match.id}`}
-                      name={`match-${match.id}`}
-                      value="DRAW"
-                      className="hidden peer"
-                      checked={predictions[match.id] === "DRAW"}
-                      onChange={() => handlePredictionChange(match.id, "DRAW")}
-                      disabled={!isGroupStageActive()}
-                    />
-                    <label
-                      htmlFor={`draw-${match.id}`}
-                      className={getPredictionCardClass(match, "DRAW")}
-                    >
-                      <Image
-                        src="/images/logos/logo.png"
-                        alt="Draw"
-                        className="w-12 h-12 object-cover rounded-full"
-                        width={256}
-                        height={256}
-                        unoptimized
-                      />
-                      <span className="text-sm text-center leading-tight">Nul</span>
-                    </label>
-                  </li>
-                  <li>
-                    <input
-                      type="radio"
-                      id={`away-${match.id}`}
-                      name={`match-${match.id}`}
-                      value="AWAY_TEAM"
-                      className="hidden peer"
-                      checked={predictions[match.id] === "AWAY_TEAM"}
-                      onChange={() => handlePredictionChange(match.id, "AWAY_TEAM")}
-                      disabled={!isGroupStageActive()}
-                    />
-                    <label
-                      htmlFor={`away-${match.id}`}
-                      className={getPredictionCardClass(match, "AWAY_TEAM")}
-                    >
-                      {safeSrc(match.away_team_crest) ? (
-                        <Image
-                          src={match.away_team_crest}
-                          alt={`${match.away_team_name} crest`}
-                          className="w-12 h-12 object-cover rounded-full"
-                          width={256}
-                          height={256}
-                          unoptimized
-                        />) : (<div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-xs"> ? </div>)}
-                      <span className="text-sm text-center leading-tight">
-                        {safeSrc(match.away_team_crest) ? (
-                          translateCountry(match.away_team_name)
-                        ) : ("Pays inconnu")}
-                      </span>
-                    </label>
-                  </li>
-                </ul>
-                {errors[match.id] && (
-                  <p className="text-red-500 text-sm mt-2">{errors[match.id]}</p>
+        
+        {/* Grouper les matches par statut */}
+        {(() => {
+          const upcomingMatches = [...matches]
+            .filter(m => m.status !== "FINISHED")
+            .sort((a, b) => new Date(a.utc_date) - new Date(b.utc_date));
+          const finishedMatches = [...matches]
+            .filter(m => m.status === "FINISHED")
+            .sort((a, b) => new Date(b.utc_date) - new Date(a.utc_date));
+
+          const MatchGrid = ({ matchList }) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {matchList.map((match) => (
+                <div key={match.id} id={`match-${match.id}`} className="bg-gray-800 rounded-lg border border-gray-600">
+                  <div className="p-2 border-b-1 border-emerald-700">
+                    <h3 className={`font-bold text-center ${isMatchFinished(match) ? "opacity-50" : ""}`}>
+                      {formatGroupName(match.group_name)} - {new Date(match.utc_date).toLocaleString("fr-FR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </h3>
+                  </div>
+                  <div className="p-3">
+                    <ul className="flex items-center justify-center space-x-4">
+                      <li>
+                        <input
+                          type="radio"
+                          id={`home-${match.id}`}
+                          name={`match-${match.id}`}
+                          value="HOME_TEAM"
+                          className="hidden peer"
+                          checked={predictions[match.id] === "HOME_TEAM"}
+                          onChange={() => handlePredictionChange(match.id, "HOME_TEAM")}
+                          disabled={!isGroupStageActive()}
+                        />
+                        <label
+                          htmlFor={`home-${match.id}`}
+                          className={getPredictionCardClass(match, "HOME_TEAM")}
+                        >
+                          {safeSrc(match.home_team_crest) ? (
+                            <Image
+                              src={match.home_team_crest}
+                              alt={`${match.home_team_name} crest`}
+                              className="w-12 h-12 object-cover rounded-full"
+                              width={256}
+                              height={256}
+                              unoptimized
+                            />) : (<div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-xs"> ? </div>)}
+                          <span className="text-sm text-center leading-tight">
+                            {safeSrc(match.home_team_crest) ? (
+                              translateCountry(match.home_team_name)
+                            ) : ("Pays inconnu")}
+                          </span>
+                        </label>
+                      </li>
+                      <li>
+                        <input
+                          type="radio"
+                          id={`draw-${match.id}`}
+                          name={`match-${match.id}`}
+                          value="DRAW"
+                          className="hidden peer"
+                          checked={predictions[match.id] === "DRAW"}
+                          onChange={() => handlePredictionChange(match.id, "DRAW")}
+                          disabled={!isGroupStageActive()}
+                        />
+                        <label
+                          htmlFor={`draw-${match.id}`}
+                          className={getPredictionCardClass(match, "DRAW")}
+                        >
+                          <Image
+                            src="/images/logos/logo.png"
+                            alt="Draw"
+                            className="w-12 h-12 object-cover rounded-full"
+                            width={256}
+                            height={256}
+                            unoptimized
+                          />
+                          <span className="text-sm text-center leading-tight">Nul</span>
+                        </label>
+                      </li>
+                      <li>
+                        <input
+                          type="radio"
+                          id={`away-${match.id}`}
+                          name={`match-${match.id}`}
+                          value="AWAY_TEAM"
+                          className="hidden peer"
+                          checked={predictions[match.id] === "AWAY_TEAM"}
+                          onChange={() => handlePredictionChange(match.id, "AWAY_TEAM")}
+                          disabled={!isGroupStageActive()}
+                        />
+                        <label
+                          htmlFor={`away-${match.id}`}
+                          className={getPredictionCardClass(match, "AWAY_TEAM")}
+                        >
+                          {safeSrc(match.away_team_crest) ? (
+                            <Image
+                              src={match.away_team_crest}
+                              alt={`${match.away_team_name} crest`}
+                              className="w-12 h-12 object-cover rounded-full"
+                              width={256}
+                              height={256}
+                              unoptimized
+                            />) : (<div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-xs"> ? </div>)}
+                          <span className="text-sm text-center leading-tight">
+                            {safeSrc(match.away_team_crest) ? (
+                              translateCountry(match.away_team_name)
+                            ) : ("Pays inconnu")}
+                          </span>
+                        </label>
+                      </li>
+                    </ul>
+                    {errors[match.id] && (
+                      <p className="text-red-500 text-sm mt-2">{errors[match.id]}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+
+          return (
+            <>
+              {/* Accordion - À venir */}
+              <div className="mb-4 bg-gray-800 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => toggleAccordion('upcoming')}
+                  className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
+                >
+                  <span>À venir ({upcomingMatches.length})</span>
+                  <span className={`transform transition-transform ${openAccordions.upcoming ? 'rotate-180' : ''}`}>▼</span>
+                </button>
+                {openAccordions.upcoming && (
+                  <div className="p-4">
+                    <MatchGrid matchList={upcomingMatches} />
+                  </div>
                 )}
               </div>
-            </div>
-          ))}
-        </div>
+
+              {/* Accordion - Terminés */}
+              <div className="mb-4 bg-gray-800 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => toggleAccordion('finished')}
+                  className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
+                >
+                  <span>Terminés ({finishedMatches.length})</span>
+                  <span className={`transform transition-transform ${openAccordions.finished ? 'rotate-180' : ''}`}>▼</span>
+                </button>
+                {openAccordions.finished && (
+                  <div className="p-4">
+                    <MatchGrid matchList={finishedMatches} />
+                  </div>
+                )}
+              </div>
+            </>
+          );
+        })()}
         <button
           onClick={handleSubmit}
           disabled={!isGroupStageActive()}
-          className={`mt-4 w-full font-bold py-2 px-4 border-b-4 rounded ${
+          className={`hidden mt-4 w-full font-bold py-2 px-4 border-b-4 rounded ${
             isGroupStageActive()
               ? "bg-emerald-900 hover:bg-emerald-800 text-white border-emerald-500 hover:border-emerald-400"
               : "bg-gray-600 text-gray-400 border-gray-500 cursor-not-allowed"
