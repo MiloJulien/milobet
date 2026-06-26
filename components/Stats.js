@@ -138,7 +138,10 @@ export default function Stats() {
       return (
         <div
         key={match.id}
-        onClick={() => setModalMatch(match)}
+        onClick={() => {
+          if (match.status !== "FINISHED") return;
+          setModalMatch(match);
+        }}
         className={`rounded-lg border border-gray-600 cursor-pointer hover:border-gray-400 transition-colors ${
           isFinished ? 'bg-gray-800 opacity-80' : 'bg-gray-800'
         }`}
