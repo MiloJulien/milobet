@@ -4,42 +4,52 @@ import { NextResponse } from 'next/server';
 export async function GET(req) {
   try {
     // Query PostgreSQL optimisée pour récupérer les matches et compter les bets
-    const result = await prisma.$queryRaw`
-      SELECT 
-        m.id,
-        m.home_team_name,
-        m.away_team_name,
-        m.utc_date,
-        m.score_winner,
-        m.status,        COALESCE(SUM(CASE WHEN b.prediction = 'HOME_TEAM' THEN 1 ELSE 0 END), 0) as home_count,
-        COALESCE(SUM(CASE WHEN b.prediction = 'DRAW' THEN 1 ELSE 0 END), 0) as draw_count,
-        COALESCE(SUM(CASE WHEN b.prediction = 'AWAY_TEAM' THEN 1 ELSE 0 END), 0) as away_count
-      FROM matches m
-      LEFT JOIN bet b ON m.id = b.match_id
-      GROUP BY m.id, m.home_team_name, m.away_team_name, m.utc_date, m.status
-      ORDER BY m.utc_date ASC
-    `;
-
+    const result = await prisma.matches.findMany({
+      include: {
+        bet: {
+          include: {
+            users: {
+              select: {
+                username: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        utc_date: "asc",
+      },
+    });
+    
     // Formater les données
-    const matchesStats = result.map((row) => {
-      const total = Number(row.home_count) + Number(row.draw_count) + Number(row.away_count);
+    const matchesStats = result.map((match) => {
+      const home = match.bet.filter(b => b.prediction === "HOME_TEAM").length;
+      const draw = match.bet.filter(b => b.prediction === "DRAW").length;
+      const away = match.bet.filter(b => b.prediction === "AWAY_TEAM").length;
       
       return {
-        id: row.id,
-        team1: row.home_team_name,
-        team2: row.away_team_name,
-        utc_date: row.utc_date,
-        score_winner: row.score_winner,
-        status: row.status,
+        id: match.id,
+        team1: match.home_team_name,
+        team2: match.away_team_name,
+        utc_date: match.utc_date,
+        score_winner: match.score_winner,
+        status: match.status,
+        
         stats: {
-          home: Number(row.home_count),
-          draw: Number(row.draw_count),
-          away: Number(row.away_count),
+          home,
+          draw,
+          away,
         },
-        total,
+        
+        total: match.bet.length,
+        
+        bets: match.bet.map((b) => ({
+          username: b.users.username,
+          prediction: b.prediction,
+        })),
       };
     });
-
+    
     return NextResponse.json(
       { stats: matchesStats },
       { 

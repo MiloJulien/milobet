@@ -7,7 +7,8 @@ export default function Stats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openAccordions, setOpenAccordions] = useState({ upcoming: true, ongoing: true, finished: true });
-
+  const [modalMatch, setModalMatch] = useState(null);
+  
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -23,12 +24,12 @@ export default function Stats() {
         setLoading(false);
       }
     };
-
+    
     fetchStats();
   }, []);
-
+  
   const colorPalette = { name: "Italien", colors: ["#10b981", "#ffffff", "#ef4444"] };
-
+  
   const countryTranslations = {
     "Mexico": "Mexique",
     "South Africa": "Afrique du Sud",
@@ -69,184 +70,340 @@ export default function Stats() {
     "England": "Angleterre",
     "Croatia": "Croatie",
   };
-
+  
   const translateTeam = (teamName) => {
     return countryTranslations[teamName] || teamName;
   };
-
+  
   if (loading) {
     return (
       <div className="p-6 bg-gray-900 min-h-screen">
-        <div className="text-white">Chargement...</div>
+      <div className="text-white">Chargement...</div>
       </div>
     );
   }
-
+  
   if (error) {
     return (
       <div className="p-6 bg-gray-900 min-h-screen">
-        <div className="text-red-500">Erreur: {error}</div>
+      <div className="text-red-500">Erreur: {error}</div>
       </div>
     );
   }
-
+  
   if (!matches || matches.length === 0) {
     return (
       <div className="p-6 bg-gray-900 min-h-screen">
-        <div className="text-white">Aucun match disponible</div>
+      <div className="text-white">Aucun match disponible</div>
       </div>
     );
   }
-
+  
   // Grouper les matches par statut
   const upcomingMatches = matches.filter(m => m.status !== 'FINISHED').sort((a, b) => new Date(a.utc_date) - new Date(b.utc_date));
   const finishedMatches = matches.filter(m => m.status === 'FINISHED').sort((a, b) => new Date(b.utc_date) - new Date(a.utc_date));
-
+  
+  const homeBets = modalMatch?.bets.filter(
+    b => b.prediction === "HOME_TEAM"
+  ) ?? [];
+  
+  const drawBets = modalMatch?.bets.filter(
+    b => b.prediction === "DRAW"
+  ) ?? [];
+  
+  const awayBets = modalMatch?.bets.filter(
+    b => b.prediction === "AWAY_TEAM"
+  ) ?? [];
+  
   const toggleAccordion = (key) => {
     setOpenAccordions(prev => ({ ...prev, [key]: !prev[key] }));
   };
-
+  
   const MatchGrid = ({ matchList }) => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {matchList.map((match) => {
-        const totalBets = match.total;
-        const home_pct = totalBets > 0 ? ((match.stats.home / totalBets) * 100).toFixed(1) : 0;
-        const draw_pct = totalBets > 0 ? ((match.stats.draw / totalBets) * 100).toFixed(1) : 0;
-        const away_pct = totalBets > 0 ? ((match.stats.away / totalBets) * 100).toFixed(1) : 0;
-        
-        const team1Translated = translateTeam(match.team1);
-        const team2Translated = translateTeam(match.team2);
-
-        const isFinished = match.status === 'FINISHED';
-        const isDraw = match.score_winner === 'DRAW';
-        const homeWon = match.score_winner === 'HOME_TEAM';
-        const awayWon = match.score_winner === 'AWAY_TEAM';
-        
-        return (
-          <div key={match.id} className={`rounded-lg border border-gray-600 ${
-            isFinished ? 'bg-gray-800 opacity-80' : 'bg-gray-800'
-          }`}>
-            <div className="p-2 border-b-1 border-emerald-700">
-              <h3 className="font-bold text-center text-white">
-                {team1Translated} - {team2Translated}
-              </h3>
-            </div>
-            <div className="p-4">
-              <div className={`w-full rounded-lg h-6 overflow-hidden flex mb-6 bg-gray-700`} 
-                    style={{ boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)" }}>
-                {match.stats.home > 0 && (
-                  <div 
-                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (homeWon ? ' opacity-100' : ' opacity-80'))}
-                    style={{ 
-                      width: `${home_pct}%`, 
-                      backgroundColor: colorPalette.colors[0], 
-                      boxShadow: homeWon && isFinished 
-                        ? "0 0 15px rgba(16, 185, 129, 0.8), inset 0 1px 2px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.4)" 
-                        : "0 4px 6px rgba(0,0,0,0.3)"
-                    }}
-                  >
-                    <span className="font-bold text-sm text-white">{match.stats.home}</span>
-                  </div>
-                )}
-                {match.stats.draw > 0 && (
-                  <div 
-                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (isDraw ? ' opacity-100' : ' opacity-80'))}
-                    style={{ 
-                      width: `${draw_pct}%`, 
-                      backgroundColor: colorPalette.colors[1], 
-                      boxShadow: isDraw && isFinished 
-                        ? "0 0 15px rgba(255, 255, 255, 0.8), inset 0 1px 2px rgba(255,255,255,0.5), 0 4px 8px rgba(0,0,0,0.4)" 
-                        : "0 4px 6px rgba(0,0,0,0.3)"
-                    }}
-                  >
-                    <span className="font-bold text-sm text-gray-900">{match.stats.draw}</span>
-                  </div>
-                )}
-                {match.stats.away > 0 && (
-                  <div 
-                    className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (awayWon ? ' opacity-100' : ' opacity-80'))}
-                    style={{ 
-                      width: `${away_pct}%`, 
-                      backgroundColor: colorPalette.colors[2], 
-                      boxShadow: awayWon && isFinished 
-                        ? "0 0 15px rgba(239, 68, 68, 0.8), inset 0 1px 2px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.4)" 
-                        : "0 4px 6px rgba(0,0,0,0.3)"
-                    }}
-                  >
-                    <span className="font-bold text-sm text-white">{match.stats.away}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                {match.stats.home > 0 && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[0] }}></div>
-                    <div className="flex justify-between flex-1">
-                      <p className="text-white text-xs font-bold">{team1Translated}</p>
-                      <p className="text-gray-400 text-xs">{match.stats.home} pronostics ({home_pct}%)</p>
-                    </div>
-                  </div>
-                )}
-                {match.stats.draw > 0 && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[1] }}></div>
-                    <div className="flex justify-between flex-1">
-                      <p className="text-white text-xs font-bold">Nul</p>
-                      <p className="text-gray-400 text-xs">{match.stats.draw} pronostics ({draw_pct}%)</p>
-                    </div>
-                  </div>
-                )}
-                {match.stats.away > 0 && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[2] }}></div>
-                    <div className="flex justify-between flex-1">
-                      <p className="text-white text-xs font-bold">{team2Translated}</p>
-                      <p className="text-gray-400 text-xs">{match.stats.away} pronostics ({away_pct}%)</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+    {matchList.map((match) => {
+      const totalBets = match.total;
+      const home_pct = totalBets > 0 ? ((match.stats.home / totalBets) * 100).toFixed(1) : 0;
+      const draw_pct = totalBets > 0 ? ((match.stats.draw / totalBets) * 100).toFixed(1) : 0;
+      const away_pct = totalBets > 0 ? ((match.stats.away / totalBets) * 100).toFixed(1) : 0;
+      
+      const team1Translated = translateTeam(match.team1);
+      const team2Translated = translateTeam(match.team2);
+      
+      const isFinished = match.status === 'FINISHED';
+      const isDraw = match.score_winner === 'DRAW';
+      const homeWon = match.score_winner === 'HOME_TEAM';
+      const awayWon = match.score_winner === 'AWAY_TEAM';
+      
+      return (
+        <div
+        key={match.id}
+        onClick={() => setModalMatch(match)}
+        className={`rounded-lg border border-gray-600 cursor-pointer hover:border-gray-400 transition-colors ${
+          isFinished ? 'bg-gray-800 opacity-80' : 'bg-gray-800'
+        }`}
+        >
+        <div className="p-2 border-b-1 border-emerald-700">
+        <h3 className="font-bold text-center text-white">
+        {team1Translated} - {team2Translated}
+        </h3>
+        </div>
+        <div className="p-4">
+        <div className={`w-full rounded-lg h-6 overflow-hidden flex mb-6 bg-gray-700`} 
+        style={{ boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)" }}>
+        {match.stats.home > 0 && (
+          <div 
+          className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (homeWon ? ' opacity-100' : ' opacity-80'))}
+          style={{ 
+            width: `${home_pct}%`, 
+            backgroundColor: colorPalette.colors[0], 
+            boxShadow: homeWon && isFinished 
+            ? "0 0 15px rgba(16, 185, 129, 0.8), inset 0 1px 2px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.4)" 
+            : "0 4px 6px rgba(0,0,0,0.3)"
+          }}
+          >
+          <span className="font-bold text-sm text-white">{match.stats.home}</span>
           </div>
-        );
-      })}
+        )}
+        {match.stats.draw > 0 && (
+          <div 
+          className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (isDraw ? ' opacity-100' : ' opacity-80'))}
+          style={{ 
+            width: `${draw_pct}%`, 
+            backgroundColor: colorPalette.colors[1], 
+            boxShadow: isDraw && isFinished 
+            ? "0 0 15px rgba(255, 255, 255, 0.8), inset 0 1px 2px rgba(255,255,255,0.5), 0 4px 8px rgba(0,0,0,0.4)" 
+            : "0 4px 6px rgba(0,0,0,0.3)"
+          }}
+          >
+          <span className="font-bold text-sm text-gray-900">{match.stats.draw}</span>
+          </div>
+        )}
+        {match.stats.away > 0 && (
+          <div 
+          className={`h-full flex items-center justify-center` + (!isFinished ? ' opacity-100' : (awayWon ? ' opacity-100' : ' opacity-80'))}
+          style={{ 
+            width: `${away_pct}%`, 
+            backgroundColor: colorPalette.colors[2], 
+            boxShadow: awayWon && isFinished 
+            ? "0 0 15px rgba(239, 68, 68, 0.8), inset 0 1px 2px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.4)" 
+            : "0 4px 6px rgba(0,0,0,0.3)"
+          }}
+          >
+          <span className="font-bold text-sm text-white">{match.stats.away}</span>
+          </div>
+        )}
+        </div>
+        
+        <div className="space-y-2">
+        {match.stats.home > 0 && (
+          <div className="flex items-center gap-3">
+          <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[0] }}></div>
+          <div className="flex justify-between flex-1">
+          <p className="text-white text-xs font-bold">{team1Translated}</p>
+          <p className="text-gray-400 text-xs">{match.stats.home} pronostics ({home_pct}%)</p>
+          </div>
+          </div>
+        )}
+        {match.stats.draw > 0 && (
+          <div className="flex items-center gap-3">
+          <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[1] }}></div>
+          <div className="flex justify-between flex-1">
+          <p className="text-white text-xs font-bold">Nul</p>
+          <p className="text-gray-400 text-xs">{match.stats.draw} pronostics ({draw_pct}%)</p>
+          </div>
+          </div>
+        )}
+        {match.stats.away > 0 && (
+          <div className="flex items-center gap-3">
+          <div className="w-3 h-3 rounded" style={{ backgroundColor: colorPalette.colors[2] }}></div>
+          <div className="flex justify-between flex-1">
+          <p className="text-white text-xs font-bold">{team2Translated}</p>
+          <p className="text-gray-400 text-xs">{match.stats.away} pronostics ({away_pct}%)</p>
+          </div>
+          </div>
+        )}
+        </div>
+        </div>
+        </div>
+      );
+    })}
     </div>
   );
-
+  
   return (
+    <>
+    {modalMatch && (
+      <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      onClick={() => setModalMatch(null)}
+      >
+      <div
+      className="bg-gray-800 border border-gray-600 rounded-xl w-full max-w-md max-h-[65vh] flex flex-col"
+      onClick={(e) => e.stopPropagation()}
+      >
+      <div className="p-4 border-b border-gray-600 flex justify-between items-center shrink-0">
+      <h3>
+      {translateTeam(modalMatch.team1)} - {translateTeam(modalMatch.team2)}
+      </h3>
+      
+      <button
+      onClick={() => setModalMatch(null)}
+      className="text-gray-400 hover:text-white text-xl"
+      >
+      ✕
+      </button>
+      </div>
+      
+      <div className="shrink-0">
+      <div className="flex h-2">
+      <div
+      className="bg-emerald-500"
+      style={{
+        width: `${modalMatch.total ? (modalMatch.stats.home / modalMatch.total) * 100 : 0}%`,
+      }}
+      />
+      <div
+      className="bg-white"
+      style={{
+        width: `${modalMatch.total ? (modalMatch.stats.draw / modalMatch.total) * 100 : 0}%`,
+      }}
+      />
+      <div
+      className="bg-red-500"
+      style={{
+        width: `${modalMatch.total ? (modalMatch.stats.away / modalMatch.total) * 100 : 0}%`,
+      }}
+      />
+      </div>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+      
+      {/* Domicile */}
+      {/* Domicile */}
+      {homeBets.length > 0 && (
+        <div>
+        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+        <div className="w-3 h-3 rounded bg-emerald-500" />
+        <span className="font-bold text-emerald-400">
+        {translateTeam(modalMatch.team1)}
+        </span>
+        </div>
+        
+        <span className="text-xs text-gray-400">
+        {homeBets.length} pronostic{homeBets.length > 1 && "s"}
+        </span>
+        </div>
+        
+        <div className="space-y-1">
+        {homeBets.map((bet) => (
+          <div
+          key={bet.username}
+          className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-2 text-white"
+          >
+          {bet.username}
+          </div>
+        ))}
+        </div>
+        </div>
+      )}
+      
+      {/* Nul */}
+      {drawBets.length > 0 && (
+        <div>
+        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+        <div className="w-3 h-3 rounded bg-white" />
+        <span className="font-bold text-white">
+        Nul
+        </span>
+        </div>
+        
+        <span className="text-xs text-gray-400">
+        {drawBets.length} pronostic{drawBets.length > 1 && "s"}
+        </span>
+        </div>
+        
+        <div className="space-y-1">
+        {drawBets.map((bet) => (
+          <div
+          key={bet.username}
+          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"
+          >
+          {bet.username}
+          </div>
+        ))}
+        </div>
+        </div>
+      )}
+      
+      {/* Extérieur */}
+      {awayBets.length > 0 && (
+        <div>
+        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+        <div className="w-3 h-3 rounded bg-red-500" />
+        <span className="font-bold text-red-400">
+        {translateTeam(modalMatch.team2)}
+        </span>
+        </div>
+        
+        <span className="text-xs text-gray-400">
+        {awayBets.length} pronostic{awayBets.length > 1 && "s"}
+        </span>
+        </div>
+        
+        <div className="space-y-1">
+        {awayBets.map((bet) => (
+          <div
+          key={bet.username}
+          className="bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-white"
+          >
+          {bet.username}
+          </div>
+        ))}
+        </div>
+        </div>
+      )}
+      </div>
+      </div>
+      </div>
+    )}
     <div className="container mx-auto p-4">
-      {/* Accordion - À venir */}
-      <div className="mb-4 bg-slate-900 rounded-lg overflow-hidden">
-        <button
-          onClick={() => toggleAccordion('upcoming')}
-          className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
-        >
-          <span>À venir ({upcomingMatches.length})</span>
-          <span className={`transform transition-transform ${openAccordions.upcoming ? 'rotate-180' : ''}`}>▼</span>
-        </button>
-        {openAccordions.upcoming && (
-          <div className="p-4">
-            <MatchGrid matchList={upcomingMatches} />
-          </div>
-        )}
+    {/* Accordion - À venir */}
+    <div className="mb-4 bg-slate-900 rounded-lg overflow-hidden">
+    <button
+    onClick={() => toggleAccordion('upcoming')}
+    className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
+    >
+    <span>À venir ({upcomingMatches.length})</span>
+    <span className={`transform transition-transform ${openAccordions.upcoming ? 'rotate-180' : ''}`}>▼</span>
+    </button>
+    {openAccordions.upcoming && (
+      <div className="p-4">
+      <MatchGrid matchList={upcomingMatches} />
       </div>
-
-      {/* Accordion - Terminés */}
-      <div className="mb-4 bg-slate-900 rounded-lg overflow-hidden">
-        <button
-          onClick={() => toggleAccordion('finished')}
-          className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
-        >
-          <span>Terminés ({finishedMatches.length})</span>
-          <span className={`transform transition-transform ${openAccordions.finished ? 'rotate-180' : ''}`}>▼</span>
-        </button>
-        {openAccordions.finished && (
-          <div className="p-4">
-            <MatchGrid matchList={finishedMatches} />
-          </div>
-        )}
-      </div>
+    )}
     </div>
+    
+    {/* Accordion - Terminés */}
+    <div className="mb-4 bg-slate-900 rounded-lg overflow-hidden">
+    <button
+    onClick={() => toggleAccordion('finished')}
+    className="w-full p-4 bg-gray-700 hover:bg-gray-600 text-white font-bold flex justify-between items-center"
+    >
+    <span>Terminés ({finishedMatches.length})</span>
+    <span className={`transform transition-transform ${openAccordions.finished ? 'rotate-180' : ''}`}>▼</span>
+    </button>
+    {openAccordions.finished && (
+      <div className="p-4">
+      <MatchGrid matchList={finishedMatches} />
+      </div>
+    )}
+    </div>
+    </div>
+    </>
   );
 }
